@@ -14,7 +14,7 @@ const WalletScreen = ({ navigation }) => {
   }, []);
   
   const fetchWalletData = () => {
-    // Simulate API call to get wallet data
+    // API call to get wallet data
     setTimeout(() => {
       setWalletData({
         balance: {

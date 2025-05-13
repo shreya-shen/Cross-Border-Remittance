@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { TextInput, Button, Text, Title, HelperText } from 'react-native-paper';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
+import { useSearchParams, useRouter } from 'expo-router';
 
 const OtpSchema = Yup.object().shape({
   otp: Yup.string()
@@ -11,13 +12,13 @@ const OtpSchema = Yup.object().shape({
     .length(6, 'OTP must be 6 digits'),
 });
 
-export default function OtpVerificationScreen({ route, navigation }) {
-  const { email } = route.params;
+export default function OtpVerificationScreen() {
+  const { email } = useSearchParams(); // ✅ gets ?email=abc@example.com
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [resendDisabled, setResendDisabled] = useState(true);
   const [countdown, setCountdown] = useState(30);
 
-  // Countdown timer for OTP resend
   useEffect(() => {
     if (countdown > 0 && resendDisabled) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
@@ -30,15 +31,9 @@ export default function OtpVerificationScreen({ route, navigation }) {
   const handleVerifyOtp = async (values) => {
     try {
       setLoading(true);
-      // Here you would call your API to verify the OTP
       console.log('Verifying OTP:', values.otp, 'for email:', email);
-      
-      // For demo: simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // TODO: If verification is successful, navigate to the main app
-      // For now, we'll just go back to login
-      navigation.navigate('Login');
+      router.push('/login'); // ✅ redirect using Expo Router
     } catch (error) {
       console.error('OTP verification error:', error);
     } finally {
@@ -50,11 +45,7 @@ export default function OtpVerificationScreen({ route, navigation }) {
     try {
       setResendDisabled(true);
       setCountdown(30);
-      
-      // Here you would call your API to resend OTP
       console.log('Resending OTP to:', email);
-      
-      // For demo: simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
     } catch (error) {
       console.error('Resend OTP error:', error);
@@ -89,7 +80,6 @@ export default function OtpVerificationScreen({ route, navigation }) {
             {touched.otp && errors.otp && (
               <HelperText type="error">{errors.otp}</HelperText>
             )}
-
             <Button
               mode="contained"
               onPress={handleSubmit}
@@ -119,42 +109,12 @@ export default function OtpVerificationScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginTop: 20,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: 'gray',
-    marginTop: 10,
-    textAlign: 'center',
-    marginBottom: 30,
-  },
-  formContainer: {
-    marginBottom: 20,
-  },
-  input: {
-    marginBottom: 10,
-    fontSize: 18,
-    letterSpacing: 5,
-  },
-  button: {
-    marginTop: 15,
-    paddingVertical: 8,
-  },
-  resendContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  resendButton: {
-    marginLeft: 5,
-  },
+  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  title: { fontSize: 24, fontWeight: 'bold', marginTop: 20, textAlign: 'center' },
+  subtitle: { fontSize: 16, color: 'gray', marginTop: 10, textAlign: 'center', marginBottom: 30 },
+  formContainer: { marginBottom: 20 },
+  input: { marginBottom: 10, fontSize: 18, letterSpacing: 5 },
+  button: { marginTop: 15, paddingVertical: 8 },
+  resendContainer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
+  resendButton: { marginLeft: 5 },
 });

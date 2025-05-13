@@ -15,7 +15,7 @@ const TransactionHistoryScreen = () => {
   }, []);
   
   const fetchTransactionHistory = () => {
-    // Simulate API call to get transaction history
+    // API call to get trans history
     setTimeout(() => {
       setTransactions([
         {
@@ -119,7 +119,7 @@ const TransactionHistoryScreen = () => {
   const filterTransactions = () => {
     let filtered = [...transactions];
     
-    // Apply search filter
+    // search filter
     if (searchQuery) {
       filtered = filtered.filter(transaction => {
         const title = renderTransactionTitle(transaction).toLowerCase();
@@ -127,7 +127,7 @@ const TransactionHistoryScreen = () => {
       });
     }
     
-    // Apply type filter
+    // type filter
     if (filter !== 'all') {
       filtered = filtered.filter(transaction => transaction.type === filter);
     }

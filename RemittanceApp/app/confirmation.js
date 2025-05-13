@@ -1,4 +1,3 @@
-// src/screens/Transfer/ConfirmationScreen.js
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
 import { Button, Title, Text, Card, Divider, ActivityIndicator } from 'react-native-paper';
@@ -10,7 +9,7 @@ const ConfirmationScreen = ({ route, navigation }) => {
   const [processing, setProcessing] = useState(false);
   
   const getFee = () => {
-    // In a real app, this would be calculated based on amount, network congestion, etc.
+    // in real app this would be calculated based on amt, network congestion, etc.
     return (parseFloat(amount) * 0.01).toFixed(2); // 1% fee
   };
   
@@ -21,11 +20,11 @@ const ConfirmationScreen = ({ route, navigation }) => {
   const handleConfirm = () => {
     setProcessing(true);
     
-    // Simulate blockchain transaction
+    // blockchain transaction
     setTimeout(() => {
       setProcessing(false);
       
-      // Navigate to success screen or show success alert
+      // success alert
       Alert.alert(
         'Transfer Successful',
         `You have successfully sent ${convertedAmount} ${toCurrency} to ${recipient.name}`,

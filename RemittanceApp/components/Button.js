@@ -1,4 +1,3 @@
-// src/components/Button.js
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { Button as PaperButton } from 'react-native-paper';

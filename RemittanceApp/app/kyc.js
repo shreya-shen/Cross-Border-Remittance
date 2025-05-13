@@ -23,7 +23,7 @@ export default function KycFormScreen({ navigation }) {
   const [selfiePhoto, setSelfiePhoto] = useState(null);
 
   const pickImage = async (setImageFunc) => {
-    // Request permissions
+    // request permissions
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     
     if (status !== 'granted') {
@@ -44,7 +44,7 @@ export default function KycFormScreen({ navigation }) {
   };
 
   const takePhoto = async (setImageFunc) => {
-    // Request permissions
+    // request permissions
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     
     if (status !== 'granted') {
@@ -65,27 +65,27 @@ export default function KycFormScreen({ navigation }) {
 
   const handleSubmitKyc = async (values) => {
     try {
-      // Validate photos
+      // validate photos
       if (!idPhoto || !selfiePhoto) {
         alert('Please upload both ID photo and selfie');
         return;
       }
 
       setLoading(true);
-      // Here you would call your API
+      // call your fucking API
       console.log('KYC submission with:', {
         ...values,
         idPhoto,
         selfiePhoto,
       });
       
-      // For demo: simulate API call delay
+      // for demo: sim API call delay
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Show success message
+      // success message
       alert('KYC submitted successfully! We will review your documents shortly.');
       
-      // In a real app, you might navigate back or to a confirmation screen
+      // in real app might nav back or to confirmation screen
       // navigation.goBack();
     } catch (error) {
       console.error('KYC submission error:', error);

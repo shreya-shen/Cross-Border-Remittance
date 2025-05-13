@@ -1,20 +1,19 @@
-// src/components/CurrencyInput.js
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { TextInput, Text } from 'react-native-paper';
 
 const CurrencyInput = ({ value, onChangeText, style, error, ...props }) => {
   const handleTextChange = (text) => {
-    // Format input to only allow numeric values with up to 2 decimal places
+    // i/p to allow numeric values with up to 2 decimal places
     const formattedText = text.replace(/[^0-9.]/g, '');
     
-    // Handle decimal points
+    // decimal point handing
     if (formattedText.split('.').length > 2) {
       // Don't allow multiple decimal points
       return;
     }
     
-    // Limit to 2 decimal places
+    // dp limit
     const parts = formattedText.split('.');
     if (parts[1] && parts[1].length > 2) {
       return;

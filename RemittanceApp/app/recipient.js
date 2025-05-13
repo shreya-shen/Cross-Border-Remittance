@@ -19,7 +19,7 @@ const RecipientScreen = ({ route, navigation }) => {
   }, []);
   
   const fetchRecipients = () => {
-    // Simulate API call to get recent recipients
+    // sim API call to get recent recipients
     setTimeout(() => {
       setRecentRecipients([
         {
@@ -55,7 +55,7 @@ const RecipientScreen = ({ route, navigation }) => {
     
     setSearching(true);
     
-    // Simulate API call to search recipients
+    // sim API call to search recipients
     setTimeout(() => {
       setRecipients([
         {

@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 
-import CurrencyInput from '../../components/CurrencyInput';
+import CurrencyInput from '../components/CurrencyInput';
 
 const conversionSchema = Yup.object().shape({
   amount: Yup.number()
@@ -29,7 +29,7 @@ const ConversionScreen = ({ navigation }) => {
   }, []);
   
   const fetchWalletData = () => {
-    // Simulate API call to get wallet data and exchange rate
+    // API call to get wallet data and exchange rate
     setTimeout(() => {
       setWalletData({
         usdBalance: 1250.75,
@@ -41,7 +41,7 @@ const ConversionScreen = ({ navigation }) => {
   };
   
   const handleConvert = (values) => {
-    // Check if user has enough balance
+    // check if user has enough balance
     if (values.amount > walletData.usdBalance) {
       Alert.alert('Insufficient Balance', 'You do not have enough USD for this conversion');
       return;
@@ -49,12 +49,12 @@ const ConversionScreen = ({ navigation }) => {
     
     setConverting(true);
     
-    // Simulate conversion process
+    // sim conversion process
     setTimeout(() => {
       setConverting(false);
       
       if (isSendingToOthers) {
-        // Navigate to recipient selection screen
+        // recipient selection screen
         navigation.navigate('Recipient', {
           amount: values.amount,
           convertedAmount: (values.amount * exchangeRate).toFixed(2),
@@ -62,7 +62,7 @@ const ConversionScreen = ({ navigation }) => {
           toCurrency: 'USDC',
         });
       } else {
-        // Show success alert for self-conversion
+        // success alert for self-conversion
         Alert.alert(
           'Conversion Successful',
           `You have successfully converted $${values.amount} USD to $${(values.amount * exchangeRate).toFixed(2)} USDC`,

@@ -1,4 +1,3 @@
-// src/components/PhotoUploader.js
 import React, { useState } from 'react';
 import { View, Image, StyleSheet, TouchableOpacity, Alert, Platform } from 'react-native';
 import { Button, Text, ActivityIndicator } from 'react-native-paper';

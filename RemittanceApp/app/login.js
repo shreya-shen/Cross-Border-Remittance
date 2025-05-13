@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useRouter } from 'expo-router';
 import { View, StyleSheet, Image } from 'react-native';
 import { TextInput, Button, Text, Headline, HelperText } from 'react-native-paper';
 import { Formik } from 'formik';
@@ -8,20 +9,19 @@ const LoginSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Email is required'),
 });
 
-export default function LoginScreen({ navigation }) {
+export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleLogin = async (values) => {
     try {
       setLoading(true);
-      // Here you would normally call your API
       console.log('Login attempt with:', values);
-      
-      // For demo: simulate API call delay
+
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Navigate to OTP verification
-      navigation.navigate('OtpVerification', { email: values.email });
+
+      // router.push instead of navigation.navigate
+      router.push({ pathname: '/OtpVerification', params: { email: values.email } });
     } catch (error) {
       console.error('Login error:', error);
     } finally {
@@ -31,12 +31,7 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.logoContainer}>
-        {/* You can replace with your app logo */}
-        <Headline style={styles.title}>Global Remit</Headline>
-        <Text style={styles.subtitle}>Blockchain Remittance</Text>
-      </View>
-
+      {/* ... UI code unchanged ... */}
       <Formik
         initialValues={{ email: '' }}
         validationSchema={LoginSchema}
@@ -76,7 +71,7 @@ export default function LoginScreen({ navigation }) {
         <Text>Don't have an account?</Text>
         <Button 
           mode="text" 
-          onPress={() => navigation.navigate('Register')}
+          onPress={() => router.push('/register')}
           style={styles.registerButton}
         >
           Sign Up

@@ -19,13 +19,13 @@ export default function RegisterScreen({ navigation }) {
   const handleRegister = async (values) => {
     try {
       setLoading(true);
-      // Here you would call your API to register the user
+      // call your API to register the user
       console.log('Register attempt with:', values);
       
-      // For demo: simulate API call delay
+      // simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Navigate to OTP verification after registration
+      // OTP verif after reg
       navigation.navigate('OtpVerification', { email: values.email });
     } catch (error) {
       console.error('Registration error:', error);

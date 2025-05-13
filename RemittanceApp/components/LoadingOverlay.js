@@ -1,4 +1,3 @@
-// src/components/LoadingOverlay.js
 import React from 'react';
 import { View, StyleSheet, ActivityIndicator, Text } from 'react-native';
 
