@@ -1,3 +1,16 @@
+// MongoDB setup 🧠
+import mongoose from 'mongoose';
+const mongoURI = "mongodb+srv://vaishnavi03:cbr%26ep%40Mongo@cluster0.drzujf3.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+mongoose.connect(mongoURI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+mongoose.connection.on("connected", () => {
+  console.log("MongoDB connected ✅ ");
+});
+
+
+// Imports
 import express from 'express';
 import bodyParser from 'body-parser';
 import { JsonRpcProvider, Contract, Wallet } from 'ethers';
@@ -5,24 +18,44 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// dir and log file path
+// mongo schema bruh
+const userSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  phone: String,
+  role: String,
+  kycStatus: String,  // should be 'pending', 'verified', etc.
+  createdAt: Date,
+  updatedAt: Date
+});
+const User = mongoose.model('User', userSchema);
+
+
+// file sys
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const resultsFile = path.join(__dirname, 'transaction_log.json');
 
-//ABIs
+// ABIs
 import remittanceAbi from './abi/Remittance.json' assert { type: "json" };
 import stablecoinAbi from './abi/MockToken.json' assert { type: "json" };
 
-// ether provider and contract addr (replace with actual values or use .env)
+// ether setup (rep with your real contract addrs)
 const provider = new JsonRpcProvider('http://localhost:8545');
 const remittanceAddress = '0x000000000000000000000000000000000000beef';
 const stablecoinAddress = '0x000000000000000000000000000000000000dead';
 
-// log transactions
+// logging function 
 const logResult = (success, sender, recipient, amount, stage, message) => {
   const logEntry = {
-    timestamp: new Date().toISOString(), sender, recipient, amount, stage, success, message };
+    timestamp: new Date().toISOString(),
+    sender,
+    recipient,
+    amount,
+    stage,
+    success,
+    message
+  };
 
   let logData = [];
   if (fs.existsSync(resultsFile)) {
@@ -33,35 +66,28 @@ const logResult = (success, sender, recipient, amount, stage, message) => {
   fs.writeFileSync(resultsFile, JSON.stringify(logData, null, 2));
 };
 
-// mock KYC Cvheck
-const mockKYCAPI = async (address) => {
-  //sim stored KYC data
-  const mockProfiles = {
-    "0xabc123...": { verified: true, pep: false },
-    "0xdeadbeef...": { verified: false, pep: true },
-    [address]: { verified: true, pep: false }
-  };
+// mock KYC check — now queries MongoDB 🔍
+const mockKYCAPI = async (identifier) => {
+  // 'identifier' is the wallet address (assuming it's linked to user email or profile)
+  const user = await User.findOne({ walletAddress: identifier });
 
-  const profile = mockProfiles[address] || { verified: true, pep: false };
-
-  if (!profile.verified) {
-    return { verified: false, reason: "KYC not verified" };
+  if (!user) {
+    return { verified: false, reason: "User not found" };
   }
 
-  if (profile.pep) {
-    return { verified: false, reason: "PEP match - high risk user" };
+  if (user.kycStatus !== "verified") {
+    return { verified: false, reason: `KYC not verified (${user.kycStatus})` };
   }
 
   return { verified: true };
 };
 
-
-// mock AML check
+// mock AML risk scoring
 const mockAMLCheck = async (address, amount, recipient) => {
   let riskScore = 0;
   let reasons = [];
 
-  // huge transactions
+  // deny if person is too rich
   if (amount > 1000000) {
     riskScore += 40;
     reasons.push("High amount");
@@ -70,20 +96,22 @@ const mockAMLCheck = async (address, amount, recipient) => {
     reasons.push("Medium amount");
   }
 
-  // sus recipient address patterns
+  // sus recipient addrs
+  /*
   if (recipient.endsWith("bad")) {
     riskScore += 25;
     reasons.push("Flagged recipient address");
   }
+  */
 
-  // unusual time of transaction
+  // odd time
   const hour = new Date().getUTCHours();
   if (hour < 6 || hour > 22) {
     riskScore += 15;
     reasons.push("Unusual transaction hour");
   }
 
-  // known flagged sender addrs
+  // flagged accs
   if (["0x111...", "0xdeadbeef...", address].includes(address)) {
     riskScore += 20;
     reasons.push("Flagged sender address");
@@ -104,12 +132,11 @@ const mockAMLCheck = async (address, amount, recipient) => {
   };
 };
 
-
-// init Exp
+// xpress setup
 const app = express();
 app.use(bodyParser.json());
 
-//POS
+// POST /send route — trans entry point
 app.post('/send', async (req, res) => {
   const { senderPrivateKey, recipient, amount, fxRate, sourceCurrency, targetCurrency } = req.body;
 
@@ -117,34 +144,42 @@ app.post('/send', async (req, res) => {
     const wallet = new Wallet(senderPrivateKey, provider);
     const sender = wallet.address;
 
-    //KYC
+    // 🔒 KYC Check
     const kyc = await mockKYCAPI(sender);
     if (!kyc.verified) {
       logResult(false, sender, recipient, amount, 'KYC', kyc.reason);
       return res.status(403).json({ message: 'Transaction blocked due to KYC failure', reason: kyc.reason });
     }
+    logResult(true, sender, recipient, amount, 'KYC', 'KYC verified');
+    console.log(`✅ KYC verified for ${sender}`);
 
-    //AML
-    const aml = await mockAMLCheck(sender, amount);
+    // 🚨 AML Check
+    const aml = await mockAMLCheck(sender, amount, recipient);  // ✅ Fixed: recipient is now passed
     if (!aml.compliant) {
       logResult(false, sender, recipient, amount, 'AML', aml.reason);
       return res.status(403).json({ message: 'Transaction blocked due to AML non-compliance', reason: aml.reason });
     }
+    logResult(true, sender, recipient, amount, 'AML', aml.reason);
+    console.log(`✅ AML compliance verified for ${sender}`);
 
-    // interact with contracts
+    // 💸 Contract interactions
     const stablecoin = new Contract(stablecoinAddress, stablecoinAbi, wallet);
     const remittance = new Contract(remittanceAddress, remittanceAbi, wallet);
 
-    //tokens
     const approveTx = await stablecoin.approve(remittanceAddress, amount);
     await approveTx.wait();
 
-    //SEND BABYYY
     const tx = await remittance.sendRemittance(recipient, amount, fxRate, sourceCurrency, targetCurrency);
     await tx.wait();
 
     logResult(true, sender, recipient, amount, 'Success', 'Transaction completed');
-    return res.json({ message: 'Transaction successful', txHash: tx.hash });
+    return res.json({
+      message: 'Transaction successful',
+      txHash: tx.hash,
+      kyc: 'KYC verified',
+      aml: aml.reason
+    });
+
   } catch (err) {
     console.error('Transaction failed:', err);
     logResult(false, 'unknown', recipient, amount, 'Error', err.message);
@@ -152,7 +187,7 @@ app.post('/send', async (req, res) => {
   }
 });
 
-// start
+// start server
 app.listen(3000, () => {
   console.log('Server listening on port 3000');
 });
