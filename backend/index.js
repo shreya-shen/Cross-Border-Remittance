@@ -1,6 +1,5 @@
-// MongoDB setup 🧠
 import mongoose from 'mongoose';
-const mongoURI = "mongodb+srv://vaishnavi03:cbr%26ep%40Mongo@cluster0.drzujf3.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const mongoURI = "mongodb+srv://vaishnavi03:cbr%26ep%40Mongo@cluster0.drzujf3.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"; 
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -10,7 +9,6 @@ mongoose.connection.on("connected", () => {
 });
 
 
-// Imports
 import express from 'express';
 import bodyParser from 'body-parser';
 import { JsonRpcProvider, Contract, Wallet } from 'ethers';
@@ -18,7 +16,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// mongo schema bruh
+//mongo schema bruh
 const userSchema = new mongoose.Schema({
   name: String,
   email: String,
@@ -29,7 +27,6 @@ const userSchema = new mongoose.Schema({
   updatedAt: Date
 });
 const User = mongoose.model('User', userSchema);
-
 
 // file sys
 const __filename = fileURLToPath(import.meta.url);
@@ -47,15 +44,7 @@ const stablecoinAddress = '0x000000000000000000000000000000000000dead';
 
 // logging function 
 const logResult = (success, sender, recipient, amount, stage, message) => {
-  const logEntry = {
-    timestamp: new Date().toISOString(),
-    sender,
-    recipient,
-    amount,
-    stage,
-    success,
-    message
-  };
+  const logEntry = { timestamp: new Date().toISOString(), sender, recipient, amount, stage, success, message };
 
   let logData = [];
   if (fs.existsSync(resultsFile)) {
@@ -66,10 +55,10 @@ const logResult = (success, sender, recipient, amount, stage, message) => {
   fs.writeFileSync(resultsFile, JSON.stringify(logData, null, 2));
 };
 
-// mock KYC check — now queries MongoDB 🔍
+// mock KYC check
 const mockKYCAPI = async (identifier) => {
-  // 'identifier' is the wallet address (assuming it's linked to user email or profile)
-  const user = await User.findOne({ walletAddress: identifier });
+  // 'identifier' is email for now, replace with wallet address later if needed
+  const user = await User.findOne({ email: identifier.toLowerCase() });
 
   if (!user) {
     return { verified: false, reason: "User not found" };
@@ -97,12 +86,10 @@ const mockAMLCheck = async (address, amount, recipient) => {
   }
 
   // sus recipient addrs
-  /*
-  if (recipient.endsWith("bad")) {
+  /* if (recipient.endsWith("bad")) {
     riskScore += 25;
     reasons.push("Flagged recipient address");
-  }
-  */
+  } */
 
   // odd time
   const hour = new Date().getUTCHours();
