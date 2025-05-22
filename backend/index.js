@@ -35,21 +35,75 @@ const logResult = (success, sender, recipient, amount, stage, message) => {
 
 // mock KYC Cvheck
 const mockKYCAPI = async (address) => {
-  // simply: deny if address ends with '5'
-  if (address.endsWith('5')) {
-    return { verified: false, reason: 'KYC pending' };
+  //sim stored KYC data
+  const mockProfiles = {
+    "0xabc123...": { verified: true, pep: false },
+    "0xdeadbeef...": { verified: false, pep: true },
+    [address]: { verified: true, pep: false }
+  };
+
+  const profile = mockProfiles[address] || { verified: true, pep: false };
+
+  if (!profile.verified) {
+    return { verified: false, reason: "KYC not verified" };
   }
+
+  if (profile.pep) {
+    return { verified: false, reason: "PEP match - high risk user" };
+  }
+
   return { verified: true };
 };
 
+
 // mock AML check
-const mockAMLCheck = async (address, amount) => {
-  // deny if sender is too rich
+const mockAMLCheck = async (address, amount, recipient) => {
+  let riskScore = 0;
+  let reasons = [];
+
+  // huge transactions
   if (amount > 1000000) {
-    return { compliant: false, reason: 'AML threshold exceeded' };
+    riskScore += 40;
+    reasons.push("High amount");
+  } else if (amount > 500000) {
+    riskScore += 20;
+    reasons.push("Medium amount");
   }
-  return { compliant: true };
+
+  // sus recipient address patterns
+  if (recipient.endsWith("bad")) {
+    riskScore += 25;
+    reasons.push("Flagged recipient address");
+  }
+
+  // unusual time of transaction
+  const hour = new Date().getUTCHours();
+  if (hour < 6 || hour > 22) {
+    riskScore += 15;
+    reasons.push("Unusual transaction hour");
+  }
+
+  // known flagged sender addrs
+  if (["0x111...", "0xdeadbeef...", address].includes(address)) {
+    riskScore += 20;
+    reasons.push("Flagged sender address");
+  }
+
+  const THRESHOLD = 70;
+
+  if (riskScore >= THRESHOLD) {
+    return {
+      compliant: false,
+      reason: `Risk score too high (${riskScore}): ${reasons.join(", ")}`
+    };
+  }
+
+  return {
+    compliant: true,
+    reason: `Risk score acceptable (${riskScore})`
+  };
 };
+
 
 // init Exp
 const app = express();
